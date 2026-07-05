@@ -8,7 +8,7 @@ from mitmproxy import http
 CREDS_FILE = os.path.join(os.path.dirname(__file__), "creds.json")
 _seen = set()
 
-def response(flow: http.HTTPFlow):
+def capture(flow: http.HTTPFlow):
     try:
         url = flow.request.pretty_url
         if "datamsapi.ds.163.com/v1/a19ld5tool/" not in url:
@@ -34,3 +34,9 @@ def response(flow: http.HTTPFlow):
         print(f"\n*** CREDS CAPTURED *** token={token[:12]}... roleId={roleid} -> {CREDS_FILE}\n")
     except Exception as e:
         print(f"capture addon err: {e}")
+
+def request(flow: http.HTTPFlow):
+    capture(flow)
+
+def response(flow: http.HTTPFlow):
+    capture(flow)

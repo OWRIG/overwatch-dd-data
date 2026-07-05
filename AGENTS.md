@@ -27,7 +27,8 @@
 1. `winget install mitmproxy.mitmproxy`
 2. 生成并导入 mitmproxy CA 到 `Cert:\CurrentUser\Root`
 3. 启动 mitmdump（带自动提取 addon）监听 `127.0.0.1:8080`
-4. 设置系统代理 `127.0.0.1:8080`
+4. 保存原系统代理，把系统代理临时指向 `127.0.0.1:8080`
+5. 如果原本已有系统代理，会自动把它作为 mitmproxy 上游代理；也可手动传 `-UpstreamProxy 127.0.0.1:7897`
 
 **然后让用户操作**：完全退出并重开网易DD → 登录 → 进入"守望先锋统计/战绩"页 → 点几下切换英雄/地图/赛季。
 
@@ -38,7 +39,21 @@ addon 会自动检测 `datamsapi.ds.163.com/v1/a19ld5tool/` 请求，从 URL 提
 .\setup_capture.ps1 -Cleanup
 ```
 
-### 第2步：拉取数据
+### 第2步：最近 N 场报告（推荐）
+
+```powershell
+python scripts/ow_recent_report.py --limit 1000 --mode leisure --out report.txt
+```
+
+参数：
+- `--limit` 最近场次数
+- `--mode sport|leisure` 竞技/快速
+- `--detail` 额外拉每场详情，用于阵容/队友/敌方英雄分析（慢；默认不加）
+- `--start-season 23` 从指定赛季往前补足最近场次
+
+输出 `report.txt` + 去标识化缓存 `recent_<limit>_<mode>_sanitized.json`。缓存不保存玩家昵称、bnetId 或 token，但仍属于个人数据产物。
+
+### 第3步：原始数据导出（可选）
 
 ```powershell
 python scripts/ow_pull.py --season 23 --mode leisure --out data.json
@@ -48,12 +63,12 @@ python scripts/ow_pull.py --season 23 --mode leisure --out data.json
 - `--season` 赛季号（不填取最新）
 - `--mode sport|leisure` 竞技/快速
 - `--out` 输出文件
-- `--detail` 额外拉每场详情（含全队/敌方，慢）
+- `--detail` 额外拉每场详情（含全队/敌方，慢；仅在明确需要时使用）
 - `--seasons 21,22,23` 拉多赛季
 
 读取 `scripts/creds.json` 里的 token/roleId。也可用 `--token` `--roleid` 直接传。
 
-### 第3步：分析（可选）
+### 第4步：通用分析（可选）
 
 ```powershell
 python scripts/ow_analyze.py --in data.json

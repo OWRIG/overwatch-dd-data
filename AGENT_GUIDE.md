@@ -23,6 +23,7 @@
 
 - 默认只导出 match list，不加 `--detail`。
 - 只有用户明确需要逐场队友/敌方数据时，才使用 `--detail`，并先提醒它可能包含其他玩家昵称、ID 和单局表现。
+- 用户要求“最近 N 场”“阵容/地图/英雄胜率”时，优先使用 `scripts/ow_recent_report.py`，不要临时重写分析脚本。
 - 保持脚本单线程顺序请求，使用既有 delay 控制。不要降低 `MIN_DELAY`，不要移除限速逻辑。
 - 多赛季或大量详情拉取时，建议分批执行并增加间隔。
 - 判断胜负必须使用 `matchRet`，不要用 `teamScore > opponentScore` 推断胜负。
@@ -30,8 +31,8 @@
 ## 抓取流程边界
 
 - 必须由用户本人操作网易 DD。不要自动化登录，也不要尝试获取他人凭据。
-- `setup_capture.ps1` 会临时启用本地 HTTPS 调试代理，并为当前用户导入本地 CA 证书。
-- 抓取结束后，提醒用户运行 `.\setup_capture.ps1 -Cleanup`。
+- `setup_capture.ps1` 会临时启用本地 HTTPS 调试代理，并为当前用户导入本地 CA 证书。它会保存原代理设置；如果用户已有系统代理，会自动作为 mitmproxy 上游代理，或用 `-UpstreamProxy host:port` 显式指定。
+- 抓取结束后，运行或提醒用户运行 `.\setup_capture.ps1 -Cleanup`，以停掉 mitmdump 并恢复原代理。
 - 如果工作中断且抓取环境可能仍开启，优先提醒用户清理代理和证书。
 - 不得打印、总结、粘贴、上传或提交 `creds.json` 里的完整 token。
 
@@ -45,12 +46,19 @@
 python scripts/ow_pull.py --seasons 21,22,23 --out data.json
 ```
 
-- 只有用户明确接受额外隐私暴露时，才使用：
+- 最近 N 场汇总报告优先使用：
 
 ```powershell
-python scripts/ow_pull.py --seasons 21,22,23 --detail --out data.json
+python scripts/ow_recent_report.py --limit 1000 --mode leisure --out report.txt
 ```
 
+- 只有用户明确接受额外隐私暴露、或请求阵容/队友/敌方英雄分析时，才使用：
+
+```powershell
+python scripts/ow_recent_report.py --limit 1000 --mode leisure --detail --out report.txt
+```
+
+- `ow_recent_report.py` 的 cache 是去标识化缓存，不保存玩家昵称、`bnetId` 或 token；但仍属于个人数据产物，默认不要公开。
 - 分析产物默认视为私有。对外发布摘要前，应删除或聚合玩家昵称、`bnetId`、角色标识和逐场明细。
 
 ## 禁止事项
@@ -63,6 +71,6 @@ python scripts/ow_pull.py --seasons 21,22,23 --detail --out data.json
 
 ## Git 边界
 
-- `creds.json`、`data.json`、`report.txt`、`hero_stats.csv`、`map_stats.csv` 和日志应保持在 git 之外。
+- `creds.json`、`data.json`、`recent_*_sanitized.json`、`report.txt`、`hero_stats.csv`、`map_stats.csv`、`outputs/` 和日志应保持在 git 之外。
 - 提交前必须检查 staged 文件，只包含用户期望的源码或文档变更。
 - 如果用户准备公开仓库，建议保持私有，或先删除私人数据、直接操作细节，以及任何鼓励批量复用的修改。

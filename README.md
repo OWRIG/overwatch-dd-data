@@ -28,7 +28,7 @@
         │ 本地 HTTPS 调试代理(127.0.0.1:8080)         │
         └──── 识别本人会话里的 token + roleId ───────┘
                                                     │
-本地辅助脚本使用本人会话参数请求 ───────▶  拉取数据 ──▶ ow_analyze.py 分析
+本地辅助脚本使用本人会话参数请求 ───────▶  拉取数据 ──▶ ow_recent_report.py / ow_analyze.py 分析
 ```
 
 `token` + `roleId` 属于私人会话凭据，只能用于本人账号、本机本地分析。`token` 可能过期；如果接口报鉴权错误，请停止使用旧凭据，并仅在确认自己有权继续访问时重新获取本人会话凭据。
@@ -66,14 +66,18 @@ cd overwatch-dd-data/scripts
 
 # 1. 确认风险后，在本机临时开启 HTTPS 调试代理
 .\setup_capture.ps1
+#    如果你已有系统代理，脚本会自动把它作为上游代理并在 Cleanup 时恢复
 #    然后手动：完全退出并重开网易DD → 登录 → 进守望战绩页点几下
 #    看到 "CREDS CAPTURED" 即识别到本人会话参数（自动写入 creds.json）
 .\setup_capture.ps1 -Cleanup      # 抓完务必还原系统
 
-# 2. 拉数据（读 creds.json，单线程温和速率；默认不保存队友/敌方详情）
+# 2. 最近1000场快速胜率报告（默认去标识化缓存；--detail 才做阵容分析）
+python ow_recent_report.py --limit 1000 --mode leisure --detail --out report.txt
+
+# 3. 或者只拉原始列表数据（读 creds.json，单线程温和速率；默认不保存队友/敌方详情）
 python ow_pull.py --seasons 21,22,23 --out data.json
 
-# 3. 分析
+# 4. 通用分析
 python ow_analyze.py --in data.json
 #    → report.txt + hero_stats.csv + map_stats.csv
 ```
@@ -81,7 +85,8 @@ python ow_analyze.py --in data.json
 常用参数：
 - `--mode sport|leisure` 竞技 / 快速
 - `--season 23` 单赛季
-- 不加 `--detail` 只拉列表（更推荐；不会额外保存队友/敌方详情）
+- `ow_recent_report.py --limit 1000 --detail` 拉最近 1000 场并分析阵容/地图/英雄；不加 `--detail` 只分析地图和本人英雄
+- `setup_capture.ps1 -UpstreamProxy 127.0.0.1:7897` 手动指定已有代理作为上游
 - `--delay 0.5` 调整请求间隔（硬性下限 0.3s）
 
 ## 作为 Skill 使用
@@ -142,12 +147,13 @@ overwatch-dd-data/
     ├── setup_capture.ps1    # 一键环境（搭建/还原/检查）
     ├── ow_capture_addon.py  # mitmproxy 插件，识别本人会话参数并写入 creds.json
     ├── ow_pull.py           # 本地数据导出（多赛季+可选详情，单线程温和速率）
+    ├── ow_recent_report.py  # 最近N场胜率报告（可选详情阵容分析，去标识化缓存）
     └── ow_analyze.py        # 通用分析（胜负驱动/英雄/地图/职责/队友）
 ```
 
 ## 安全与隐私
 
-- `creds.json`（私人 token）和 `data.json`（对战数据，可能含队友/对手昵称、ID、单局表现）已被 `.gitignore` 排除，**切勿提交 git 或公开分享**。
+- `creds.json`（私人 token）、`data.json`、`recent_*_sanitized.json`、`report.txt`、`outputs/` 等个人数据产物已被 `.gitignore` 排除，**切勿提交 git 或公开分享**。
 - token 会过期。接口报鉴权错误时，请停止使用旧凭据；如仍需本地分析，再按上述流程重新获取本人会话参数。
 - 默认尽量不加 `--detail`；如果需要发布分析结论，请只发布汇总结果，并先匿名化或删除他人标识。
 - 定期删除不再需要的原始数据和凭据。不要把 `creds.json` 发给任何人，也不要贴到 issue、聊天工具或 AI 对话里。

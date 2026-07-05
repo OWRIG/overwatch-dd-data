@@ -10,6 +10,9 @@ data.json
 report.txt
 hero_stats.csv
 map_stats.csv
+outputs/
+*.xlsx
+*.png
 *.log
 
 # Python
