@@ -1,6 +1,6 @@
 # overwatch-dd-data Skill
 
-这是一个给 AI 编程工具加载的个人 Skill 包，用于在私有、本机环境里辅助导出并分析自己网易 DD / 守望先锋（Overwatch）战绩数据。仓库的核心交付物是 `SKILL.md` / `AGENTS.md`，`scripts/` 只是配套的本地辅助脚本。
+这是一个给 AI 编程工具加载的个人 Skill 包，用于在私有、本机环境里辅助导出并分析自己网易 DD / 守望先锋（Overwatch）战绩数据。仓库的核心交付物是 `SKILL.md` / `AGENTS.md`，`AGENT_GUIDE.md` 是给 agent 读取的操作边界，`scripts/` 只是配套的本地辅助脚本。
 
 > ⚠️ **本 Skill 未获得网易、暴雪或相关权利方授权或背书；`datamsapi` 不是公开承诺的开发者 API。本仓库不是官方 SDK、公共爬虫、数据服务或 API 中转。使用前请确认你理解并接受相关用户协议、账号和法律风险。建议仅作为个人私有 Skill 保存和加载，详见[Skill 定位](#skill-定位)、[合规与风险边界](#合规与风险边界)和[免责声明](#免责声明)。**
 
@@ -36,7 +36,7 @@
 ## Skill 定位
 
 - 这是一个**个人私有 Skill**：让 AI 编程工具按说明协助你在本机完成环境检查、数据导出和本地分析。
-- `SKILL.md` / `AGENTS.md` 是主要入口；`scripts/` 是辅助脚本，不是对外提供的 SDK、库、命令行产品或 Web 服务。
+- `SKILL.md` / `AGENTS.md` 是主要入口；`AGENT_GUIDE.md` 是面向 agent 的操作边界；`scripts/` 是辅助脚本，不是对外提供的 SDK、库、命令行产品或 Web 服务。
 - 不建议把它发布成“网易 DD 数据接口工具”“守望先锋战绩爬虫”“公共 API 客户端”等形式，也不要做成给他人使用的在线服务。
 - 如果你公开分享本仓库，建议只保留 Skill 的研究说明和风险提示，删除私人凭据、原始数据、批量化改动，以及任何会鼓励他人直接复用会话凭据的内容。
 
@@ -86,7 +86,7 @@ python ow_analyze.py --in data.json
 
 ## 作为 Skill 使用
 
-本仓库首先是一个 Skill 包，同时提供 `SKILL.md`（opencode/Claude Code 格式）和 `AGENTS.md`（Codex/Qwen/Kimi 通用格式），方便你在**个人私有环境**里调用。不要把含有私人凭据、原始数据或可用于批量访问的修改版公开分发。
+本仓库首先是一个 Skill 包，同时提供 `SKILL.md`（opencode/Claude Code 格式）和 `AGENTS.md`（Codex/Qwen/Kimi 通用格式），并提供 `AGENT_GUIDE.md` 给 agent 读取操作边界。它只适合在**个人私有环境**里调用。不要把含有私人凭据、原始数据或可用于批量访问的修改版公开分发。
 
 | 工具 | 安装位置 | 加载文件 |
 |---|---|---|
@@ -136,6 +136,7 @@ overwatch-dd-data/
 ├── README.md                # 本文件
 ├── SKILL.md                 # Skill 主入口（opencode/Claude Code，带 frontmatter）
 ├── AGENTS.md                # Skill 说明（Codex/Qwen/Kimi 通用）
+├── AGENT_GUIDE.md           # 面向 agent 的操作边界与安全默认值
 ├── .gitignore               # 排除 creds.json / data.json 等敏感输出
 └── scripts/
     ├── setup_capture.ps1    # 一键环境（搭建/还原/检查）
