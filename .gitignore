@@ -1,0 +1,26 @@
+# 用户凭据（抓包自动生成，每人不同，严禁提交/分发）
+creds.json
+
+# 拉取的数据输出（含个人对战记录，敏感）
+data.json
+*.json
+!package.json
+
+# 分析输出
+report.txt
+hero_stats.csv
+map_stats.csv
+*.log
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+
+# 编辑器/系统
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
